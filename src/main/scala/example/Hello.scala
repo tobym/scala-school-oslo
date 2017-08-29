@@ -1,30 +1,30 @@
 package example
 
-// Java code in the comments is from from https://docs.oracle.com/javase/tutorial/collections/streams/examples/ReductionExamples.java
+object Extractors extends App {
 
-/*
- // 9. Average age by gender
-
-        System.out.println("Average age by gender:");
-        Map<Person.Sex, Double> averageAgeByGender =
-                roster
-                        .stream()
-                        .collect(
-                                Collectors.groupingBy(
-                                        Person::getGender,
-                                        Collectors.averagingInt(Person::getAge)));
-
-        for (Map.Entry<Person.Sex, Double> e : averageAgeByGender.entrySet()) {
-            System.out.println(e.getKey() + ": " + e.getValue());
-        }
- */
-
-object AverageAgeByGender extends App {
-  Data.roster
-    .groupBy(_.gender)
-    .mapValues(people => people.map(_.age).sum.toDouble / people.size)
-    .foreach { case (gender, averageAge) =>
-      println(s"$gender: $averageAge")
+  for {
+    n <- 1 to 20
+  } {
+    val person = new Person(util.Random.nextInt(80))
+    val personClass = person match {
+      case Child(_) => "child"
+      case Teen(_) => "teen"
+      case Adult(_) => "adult"
     }
+    println(s"$person is $personClass")
+  }
+
 }
 
+class Person(val age: Int) {
+  override def toString = s"Person($age)"
+}
+object Adult {
+  def unapply(person: Person): Option[Int] = if (person.age > 19) Some(person.age) else None
+}
+object Teen {
+  def unapply(person: Person): Option[Int] = if (13 <= person.age && person.age <= 19) Some(person.age) else None
+}
+object Child {
+  def unapply(person: Person): Option[Int] = if (person.age < 13) Some(person.age) else None
+}
