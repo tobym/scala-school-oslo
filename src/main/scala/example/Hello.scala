@@ -1,33 +1,13 @@
 package example
 
-import scala.util._
-
 object PatternMatching extends App {
-
   /*
-   * The match is now non-exhaustive, and the compiler will warn.  I enabled
-   * scalacOptions += "-Xfatal-warnings" to make the build actually fail.
+   * :: is the "cons" operator for a List, you can destructure parts of the list
    */
-  def showNotification(notification: Notification): String = {
-    notification match {
-      case SMS(number, message) =>
-        s"You got an SMS from $number! Message: $message"
-    }
+  def sum(sumSoFar: Int, xs: List[Int]): Int = xs match {
+    case Nil => sumSoFar
+    case head :: tail => sum(head + sumSoFar, tail)
   }
-
-  val sms = SMS("98765", "Hello")
-  val email = Email("test@test.com", "foo", "bar")
-
-  println(showNotification(sms))
-  println(showNotification(email))
+  val xs = List(1, 2, 3)
+  println(s"Sum of $xs is ${sum(0, xs)}")
 }
-
-sealed trait Notification
-
-case class Email(from: String, title: String, body: String) extends Notification
-
-case class SMS(caller: String, message: String) extends Notification
-
-case class VoiceMail(contactName: String, link: String) extends Notification
-
-case class SpamNotificationException(message: String) extends Exception(message)
