@@ -1,19 +1,44 @@
 package example
 
-object Overview extends App {
+object Syntax extends App {
   println("""
     |
-    |## Compiler performance
+    |## Multiple classes in single file
     |
-    |No-longer-relevant XKCD: https://xkcd.com/303/
+    |This is nice when prototyping and when you have many simple related classes
+    |that simply don't take up enough lines of code to warrant an entire file.
     |
-    |javac is still faster, but scalac does a lot more.  With sbt's incremental
-    |compilation and sane organization of code, this is no longer a problem.
-    |The incremental compiler is designed as a platform; it can run stand-alone
-    |so other tools (IDEs) can use it.
-    |
-    |Scala 2.11.8 compilation is 15% faster than Scala 2.10.6.
-    |Scala 2.12.3 compilation is 15-33% faster  than 2.11.8 (requires Java 8).
-    |
-  """.stripMargin)
+    """.stripMargin)
+
+  val dataSet = new DataSet[String, String](
+    new ConsoleReader,
+    new ConsoleWriter,
+    str => s"$str (${str.length})"
+  )
+  dataSet.run()
+}
+
+trait Reader[+T] {
+  def read(): Seq[T]
+}
+trait Writer[-T] {
+  def write(t: T): Unit
+}
+class ConsoleReader extends Reader[String] {
+  def read(): Seq[String] = {
+    print("Enter some words: ")
+    io.StdIn.readLine.split(" ")
+  }
+}
+class ConsoleWriter extends Writer[Any] {
+  def write(t: Any): Unit = { println(t) }
+}
+class DataSet[T, U](
+  reader: Reader[T],
+  writer: Writer[U],
+  transformer: T => U
+) {
+  def run(): Unit = {
+    reader.read().map(transformer).foreach(t => writer.write(t))
+  }
 }
