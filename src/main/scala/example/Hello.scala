@@ -3,34 +3,27 @@ package example
 object Syntax extends App {
   println("""
     |
-    |## Nested methods
+    |## Expressions
     |
-    |This is nice when working with helper methods whose scope should be
-    |constrained.
+    |Nearly everything is an expression, which allows for easy assignment.
     |
     """.stripMargin)
 
-  def factorial(x: Int): Int = {
-    // This becomes a method named `fact$1` (see with :javap example.Syntax)
-    def fact(x: Int, accumulator: Int): Int = {
-      if (x <= 1) accumulator
-      else fact(x - 1, x * accumulator)
-    }
-    fact(x, 1)
-  }
+  val condition = true
+  val x = if (condition) {
+            "hello world"
+          } else {
+            "goodnight moon"
+          }
+  println(x)
 
-  println("Factorial of 4: " + factorial(4))
 
-}
-
-object Nested {
-
-  def doSomething(n: Int): Int = {
-    def stepOne = DB.read(n)
-    def stepTwo = n * 2
-    stepOne + stepTwo
-  }
+  // Even "try/catch" is an expression (note this is different from the Try utility class).
+  val y: String = try {
+                    throw new Exception("fail")
+                  } catch {
+                    case e: Exception => "here is some default value"
+                  }
+  println(y)
 
 }
-
-object DB { def read(n: Int): Int = n * n /* whatever :) */ }
