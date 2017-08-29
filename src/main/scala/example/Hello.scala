@@ -3,42 +3,34 @@ package example
 object Syntax extends App {
   println("""
     |
-    |## Multiple classes in single file
+    |## Nested methods
     |
-    |This is nice when prototyping and when you have many simple related classes
-    |that simply don't take up enough lines of code to warrant an entire file.
+    |This is nice when working with helper methods whose scope should be
+    |constrained.
     |
     """.stripMargin)
 
-  val dataSet = new DataSet[String, String](
-    new ConsoleReader,
-    new ConsoleWriter,
-    str => s"$str (${str.length})"
-  )
-  dataSet.run()
+  def factorial(x: Int): Int = {
+    // This becomes a method named `fact$1` (see with :javap example.Syntax)
+    def fact(x: Int, accumulator: Int): Int = {
+      if (x <= 1) accumulator
+      else fact(x - 1, x * accumulator)
+    }
+    fact(x, 1)
+  }
+
+  println("Factorial of 4: " + factorial(4))
+
 }
 
-trait Reader[+T] {
-  def read(): Seq[T]
-}
-trait Writer[-T] {
-  def write(t: T): Unit
-}
-class ConsoleReader extends Reader[String] {
-  def read(): Seq[String] = {
-    print("Enter some words: ")
-    io.StdIn.readLine.split(" ")
+object Nested {
+
+  def doSomething(n: Int): Int = {
+    def stepOne = DB.read(n)
+    def stepTwo = n * 2
+    stepOne + stepTwo
   }
+
 }
-class ConsoleWriter extends Writer[Any] {
-  def write(t: Any): Unit = { println(t) }
-}
-class DataSet[T, U](
-  reader: Reader[T],
-  writer: Writer[U],
-  transformer: T => U
-) {
-  def run(): Unit = {
-    reader.read().map(transformer).foreach(t => writer.write(t))
-  }
-}
+
+object DB { def read(n: Int): Int = n * n /* whatever :) */ }
