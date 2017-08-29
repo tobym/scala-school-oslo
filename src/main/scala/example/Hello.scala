@@ -1,27 +1,24 @@
 package example
 
-object Infix extends App {
-  println("""
-    |
-    |## Call-by-name parameters
-    |
-    |Method parameters can be lazily called-by-name.
-    |
-    """.stripMargin)
+import scala.util._
 
-  val scalaIsGreat = MyBool(true)
+object ForComprehension extends App {
+  val names = List("Alice", "Bob", "Eve")
 
-  // Triple-? is a symbolically-name method that just throws
-  // NotImplementedError.  Great for stubbing out methods during development.
-  // Since scalaIsGreat==true, no need to eagerly evaluate the ??? part; in fact
-  // we prefer to be lazy here.
-  println("scala or ???: " + (scalaIsGreat or ???))
+  val messages = for {
+    n    <- 1 to 3 // a Range
+    name <- names  // a List
+  } yield s"$n: $name"
 
-}
+  println(messages)
 
-case class MyBool(x: Boolean) {
-  def and(that: MyBool): MyBool = if (x) that else this
-  // Notice the arrow here, this makes `that` call-by-name!
-  def or(that: => MyBool): MyBool = if (x) this else that
-  def negate: MyBool = MyBool(!x)
+
+  // Desugared:
+  val range = 1 to 3
+  val messages2 = range.flatMap { n =>
+    names.map { name =>
+      s"$n: $name"
+    }
+  }
+  println(messages2)
 }
