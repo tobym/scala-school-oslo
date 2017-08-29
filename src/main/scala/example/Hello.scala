@@ -1,27 +1,18 @@
 package example
 
-import scala.concurrent._
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Random
 
-object IdiomaticOptionStyle extends App {
+object PatternMatching extends App {
 
-  // Use Option rather than null.  NPEs are very rare in Scala appliations.
-  def divide(numerator: Double, denominator: Double): Option[Double] =
-    if (denominator == 0)
-      None
-    else
-      Some(numerator / denominator)
+  val x: Int = Random.nextInt(10)
 
-  println("divide(15, 5) = " + divide(15, 5))
-  println("divide(15, 0) = " + divide(15, 0))
-
-  // Chain over Option with map and flatMap and filter
-  val total = 15
-  val count = 3
-  divide(total, count)
-    .filter(_ > 2)
-    .map(avg => s"Average ($avg) > 2")
-    .foreach(println)
+  // Hey, look!  `match` is an expression as well!
+  val amount = x match {
+    case 0 => "zero"
+    case 1 => "one"
+    case 2 => "two"
+    case _ => "many"
+  }
+  println(s"$x is $amount")
 
 }
