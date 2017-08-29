@@ -1,35 +1,78 @@
 package example
 
-import scala.annotation.tailrec
+// Java code in the comments is from from https://docs.oracle.com/javase/tutorial/collections/streams/examples/ReductionExamples.java
 
-object Destructuring extends App {
-  // Tuple syntax is handy for quick, simple cases.
-  def getPerson = ("Toby", "Oslo")
-  val (name, city) = getPerson
-  println(s"$name is in $city")
+/*
+import java.util.function.IntConsumer;
 
+class Averager implements IntConsumer
+{
+    private int total = 0;
+    private int count = 0;
 
-  // Case classes have the power!
-  // Throwing away unneeded data with _ helps focus on data that is important.
-  val Person(_, cities, interests) = Person.loadDefault()
-  println(s"Here are default cities   : $cities")
-  println(s"Here are default interests: $interests")
+    public double average() {
+        return count > 0 ? ((double) total)/count : 0;
+    }
 
-
-  // Regular expressions have it too
-  val time = raw"(\d{2}):(\d{2})".r
-  "18:30" match {
-    case time(hour, _) => println(s"Parsed hour $hour and discarded minute")
-  }
-
-
-  // "Parsing" :)
-  "18:30".split(":") match {
-    case Array(hour, minute) => println(s"Parsed hour $hour and minute $minute")
-  }
+    public void accept(int i) { total += i; count++; }
+    public void combine(Averager other) {
+        total += other.total;
+        count += other.count;
+    }
 }
 
-case class Person(name: String, cities: List[String], interests: List[String])
-object Person {
-  def loadDefault() = Person("Toby", List("NYC", "Oslo"), List("Scala"))
+Averager averageCollect = roster.stream()
+  .filter(p -> p.getGender() == Person.Sex.MALE)
+  .map(Person::getAge)
+  .collect(Averager::new, Averager::accept, Averager::combine);
+ */
+object Average extends App {
+
+  class ScaryMutableAverager(private var total: Int = 0, private var count: Int = 0) {
+    def add(element: Int): ScaryMutableAverager = {
+      total += element
+      count += 1
+      this
+    }
+    def combine(other: ScaryMutableAverager): ScaryMutableAverager = {
+      total += other.total
+      count += other.count
+      this
+    }
+    def average: Double = if (total == 0) 0 else total.toDouble / count
+  }
+
+  // Idiomatic style
+  case class Averager(total: Int = 0, count: Int = 0) {
+
+    def add(element: Int): Averager =
+      Averager(total + element, count + 1)
+
+    def combine(other: Averager): Averager =
+      Averager(total + other.total, count + other.count)
+
+    def average: Double = if (total == 0) 0 else total.toDouble / count
+
+  }
+
+  val avg = Data.roster
+    .filter(_.gender == Person.Sex.MALE)
+    .map(_.age)
+    .foldLeft(new Averager)( (averager, age) => averager.add(age) )
+  println(avg.average)
+
+  val (total, count) = Data.roster
+    .filter(_.gender == Person.Sex.MALE)
+    .map(_.age)
+    .foldLeft((0, 0)) { case ((total, count), age) => (total + age, count + 1) }
+  println(total.toDouble / count)
+
+  val agg = Data.roster
+    .filter(_.gender == Person.Sex.MALE)
+    .map(_.age)
+    .aggregate(new Averager)(_ add _, _ combine _) // Anonymous positional variables!
+                                                   // Combine function only used in parallel
+                                                   // collections; not needed here at all.
+  println(agg.average)
+
 }
