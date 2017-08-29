@@ -4,26 +4,22 @@ import scala.util._
 
 object PatternMatching extends App {
 
-  val spamNumbers = Set("12345", "11111")
-
-  def showNotification(notification: Notification): Try[String] = {
+  /*
+   * The match is now non-exhaustive, and the compiler will warn.  I enabled
+   * scalacOptions += "-Xfatal-warnings" to make the build actually fail.
+   */
+  def showNotification(notification: Notification): String = {
     notification match {
-      case Email(email, title, _) =>
-        Success(s"You got an email from $email with title: $title")
-      case SMS(number, message) if spamNumbers.contains(number) =>
-        Failure(SpamNotificationException(s"Spam from $number: $message"))
       case SMS(number, message) =>
-        Success(s"You got an SMS from $number! Message: $message")
-      case VoiceMail(name, link) =>
-        Success(s"$name left you a message! Click the link to hear it: $link")
+        s"You got an SMS from $number! Message: $message"
     }
   }
 
-  val spamSms = SMS("12345", "Refinance your home while earning $$$$")
-  val goodSms = SMS("98765", "Hello")
+  val sms = SMS("98765", "Hello")
+  val email = Email("test@test.com", "foo", "bar")
 
-  println(showNotification(spamSms))
-  println(showNotification(goodSms))
+  println(showNotification(sms))
+  println(showNotification(email))
 }
 
 sealed trait Notification
