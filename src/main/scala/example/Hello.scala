@@ -3,38 +3,28 @@ package example
 // Java code in the comments is from from https://docs.oracle.com/javase/tutorial/collections/streams/examples/ReductionExamples.java
 
 /*
-        // 8. Total age by gender
+ // 9. Average age by gender
 
-        System.out.println("Total age by gender:");
-        Map<Person.Sex, Integer> totalAgeByGender =
+        System.out.println("Average age by gender:");
+        Map<Person.Sex, Double> averageAgeByGender =
                 roster
                         .stream()
                         .collect(
                                 Collectors.groupingBy(
                                         Person::getGender,
-                                        Collectors.reducing(
-                                                0,
-                                                Person::getAge,
-                                                Integer::sum)));
+                                        Collectors.averagingInt(Person::getAge)));
 
-        List<Map.Entry<Person.Sex, Integer>>
-                totalAgeByGenderList =
-                new ArrayList<>(totalAgeByGender.entrySet());
-
-        totalAgeByGenderList
-                .stream()
-                .forEach(e ->
-                        System.out.println("Gender: " + e.getKey() +
-                                ", Total Age: " + e.getValue()));
+        for (Map.Entry<Person.Sex, Double> e : averageAgeByGender.entrySet()) {
+            System.out.println(e.getKey() + ": " + e.getValue());
+        }
  */
 
-object TotalAgeByGender extends App {
-  val totalAgeByGender: Map[Person.Sex, Int] =
-    Data.roster
-      .groupBy(_.gender)
-      .mapValues(people => people.foldLeft(0)((sum, person) => sum + person.age))
-  // Prefer "fold" to "reduce"; forces you to deal with the empty list case
-  totalAgeByGender.foreach { case (gender, totalAge) =>
-    println(s"Gender: $gender, Total Age: $totalAge")
-  }
+object AverageAgeByGender extends App {
+  Data.roster
+    .groupBy(_.gender)
+    .mapValues(people => people.map(_.age).sum.toDouble / people.size)
+    .foreach { case (gender, averageAge) =>
+      println(s"$gender: $averageAge")
+    }
 }
+
