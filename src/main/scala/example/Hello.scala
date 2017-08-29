@@ -3,32 +3,20 @@ package example
 object Infix extends App {
   println("""
     |
-    |## Infix notation
+    |## Call-by-name parameters
     |
-    |Any method with one parameter can be used as an infix operator.  Operators
-    |are just methods; you can use symbols to name methods (use wisely).
-    |
-    |## Examples of named and default parameters
-    |Not unique to case classes, this is just a good example.
+    |Method parameters can be lazily called-by-name.
     |
     """.stripMargin)
 
   val scalaIsGreat = MyBool(true)
-  val lannistersPayTheirDebts = MyBool(true)
-  val twoPlusTwoIsFive = MyBool(false)
 
-  println("scala     : " + scalaIsGreat)
-  println("lannisters: " + lannistersPayTheirDebts)
-  println("2+2=5     : " + twoPlusTwoIsFive)
+  // Triple-? is a symbolically-name method that just throws
+  // NotImplementedError.  Great for stubbing out methods during development.
+  // Since scalaIsGreat==true, no need to eagerly evaluate the ??? part; in fact
+  // we prefer to be lazy here.
+  println("scala or ???: " + (scalaIsGreat or ???))
 
-  // Observe the infix placement of the `and` method.
-  println("scala and lannisters: " + (scalaIsGreat and lannistersPayTheirDebts))
-  println("scala and 2+2=5     : " + (scalaIsGreat and twoPlusTwoIsFive))
-
-
-  // These two invocations are the same, just the latter reads better.
-  println(1.+(1))
-  println(1 + 1)
 }
 
 case class MyBool(x: Boolean) {
