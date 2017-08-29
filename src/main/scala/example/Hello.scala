@@ -1,13 +1,17 @@
 package example
 
-object PatternMatching extends App {
+import scala.annotation.tailrec
+
+object TailRec extends App {
   /*
-   * :: is the "cons" operator for a List, you can destructure parts of the list
+   * Uncomment the annotation to observe how the compiler helps you check that
+   * the method is truly tail recursive.
    */
-  def sum(sumSoFar: Int, xs: List[Int]): Int = xs match {
-    case Nil => sumSoFar
-    case head :: tail => sum(head + sumSoFar, tail)
+  // @tailrec
+  def sumNotTailRecursive(xs: List[Int]): Int = xs match {
+    case Nil => 0
+    case head :: tail => head + sumNotTailRecursive(tail)
   }
   val xs = List(1, 2, 3)
-  println(s"Sum of $xs is ${sum(0, xs)}")
+  println(s"Sum of $xs is ${sumNotTailRecursive(xs)}")
 }
