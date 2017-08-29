@@ -1,30 +1,32 @@
 package example
 
-object Extractors extends App {
+object Generics extends App {
+  val stack = new Stack[Fruit]
+  val apple = new Apple
+  val banana = new Banana
 
-  for {
-    n <- 1 to 20
-  } {
-    val person = new Person(util.Random.nextInt(80))
-    val personClass = person match {
-      case Child(_) => "child"
-      case Teen(_) => "teen"
-      case Adult(_) => "adult"
-    }
-    println(s"$person is $personClass")
+  stack.push(apple)
+  stack.push(banana)
+  printFruitStack(stack)
+  // printFruitStack(new Stack[Apple]) // Woah, this doesn't compile!!!
+
+  def printFruitStack(fruitStack: Stack[Fruit]) {
+    println(fruitStack)
   }
-
 }
 
-class Person(val age: Int) {
-  override def toString = s"Person($age)"
+class Stack[A] {
+  private var elements: List[A] = Nil
+  def push(x: A) { elements = x :: elements }
+  def peek: A = elements.head
+  def pop(): A = {
+    val currentTop = peek
+    elements = elements.tail
+    currentTop
+  }
+  override def toString = s"Stack($elements)"
 }
-object Adult {
-  def unapply(person: Person): Option[Int] = if (person.age > 19) Some(person.age) else None
-}
-object Teen {
-  def unapply(person: Person): Option[Int] = if (13 <= person.age && person.age <= 19) Some(person.age) else None
-}
-object Child {
-  def unapply(person: Person): Option[Int] = if (person.age < 13) Some(person.age) else None
-}
+
+class Fruit { override def toString = "Fruit" }
+class Apple extends Fruit { override def toString = "Apple" }
+class Banana extends Fruit { override def toString = "Banana" }
