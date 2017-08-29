@@ -1,0 +1,9 @@
+logs
+target
+tags
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+*.iml
