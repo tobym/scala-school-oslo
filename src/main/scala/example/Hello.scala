@@ -6,37 +6,41 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object ForComprehensionWithFutures extends App {
   // for comprehension with "Future"
-  // Future eventually returns a Try
-  // These future are launched in _serial_ because of the name dependency
-  val resultsFutures: List[Future[String]] =
-    List("Alice", "DMX", "Bob").map { name =>
-      for {
-        accountId <- DB.getAccountId(name)
-        score     <- WebService.getGameScore(accountId)
-      } yield s"$name ($accountId) has score: $score"
-    }
+  // These future are launched in _parallel_ because no dependencies are present
+  // Both requests incur their own 4-second delay, but the total runtime is
+  // still just 4 seconds because they run in parallel.
+  val osloF = WebService.getWeather(City("Oslo"))
+  val nycF = WebService.getWeather(City("New York"))
+  val resultF = for {
+    osloTemp <- osloF
+    nycTemp <- nycF
+  } yield s"Oslo is ${osloTemp.prettyCompare(nycTemp)} than NYC"
 
-  // "Give me all results if they are all successful, otherwise give me the
-  // first encountered exception as a Failure.
-  val allGoodOrFailure: Future[List[String]] = Future.sequence(resultsFutures)
-
-  allGoodOrFailure.onComplete { all =>
-    println(s"allGoodOrFailure: $all")
-    println("All results:")
-    resultsFutures.foreach(println)
-  }
+  val restult = Await.result(resultF, 10 seconds)
+  println(restult)
 }
 
-object DB {
-  def getAccountId(name: String): Future[Int] = Future {
-    if (name.contains("X"))
-      throw new Exception(s"DB lookup failed for '$name'")
-    else
-      name.hashCode
-  }
-}
 
 object WebService {
-  def getGameScore(accountId: Int): Future[Int] =
-    Future { accountId % 42 }
+  def getWeather(city: City): Future[Weather] = Future {
+    Thread.sleep(4000)  // Simulate 4-second delay
+    city match {
+      case City("Oslo") => Weather(17)
+      case City("New York") => Weather(19)
+      case _ => Weather(util.Random.nextInt(25))
+    }
+  }
+}
+
+case class City(name: String)
+case class Weather(temperatureCelcius: Int) {
+  def prettyCompare(other: Weather): String = {
+    val term = if (temperatureCelcius < other.temperatureCelcius) {
+      "cooler"
+    } else {
+      "warmer"
+    }
+    val diff = math.abs(other.temperatureCelcius - temperatureCelcius)
+    s"$diff°C $term"
+  }
 }
