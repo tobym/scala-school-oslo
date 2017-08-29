@@ -1,27 +1,29 @@
 package example
 
+import scala.util._
+
 object PatternMatching extends App {
 
-  /*
-   * Case classes provide destructuring in pattern matches!
-   * _ means to ignore the value (match any).
-   */
-  def showNotification(notification: Notification): String = {
+  val spamNumbers = Set("12345", "11111")
+
+  def showNotification(notification: Notification): Try[String] = {
     notification match {
       case Email(email, title, _) =>
-        s"You got an email from $email with title: $title"
+        Success(s"You got an email from $email with title: $title")
+      case SMS(number, message) if spamNumbers.contains(number) =>
+        Failure(SpamNotificationException(s"Spam from $number: $message"))
       case SMS(number, message) =>
-        s"You got an SMS from $number! Message: $message"
+        Success(s"You got an SMS from $number! Message: $message")
       case VoiceMail(name, link) =>
-        s"$name left you a message! Click the link to hear it: $link"
+        Success(s"$name left you a message! Click the link to hear it: $link")
     }
   }
 
-  val someSms = SMS("12345", "Are you there?")
-  val someVoiceRecording = VoiceMail("Tom", "voicerecording.org/id/123")
+  val spamSms = SMS("12345", "Refinance your home while earning $$$$")
+  val goodSms = SMS("98765", "Hello")
 
-  println(showNotification(someSms))
-  println(showNotification(someVoiceRecording))
+  println(showNotification(spamSms))
+  println(showNotification(goodSms))
 }
 
 sealed trait Notification
@@ -31,3 +33,5 @@ case class Email(from: String, title: String, body: String) extends Notification
 case class SMS(caller: String, message: String) extends Notification
 
 case class VoiceMail(contactName: String, link: String) extends Notification
+
+case class SpamNotificationException(message: String) extends Exception(message)
