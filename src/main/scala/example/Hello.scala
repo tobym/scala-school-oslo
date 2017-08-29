@@ -21,6 +21,7 @@ object Infix extends App {
 
 case class MyBool(x: Boolean) {
   def and(that: MyBool): MyBool = if (x) that else this
-  def or(that: MyBool): MyBool = if (x) this else that
+  // Notice the arrow here, this makes `that` call-by-name!
+  def or(that: => MyBool): MyBool = if (x) this else that
   def negate: MyBool = MyBool(!x)
 }
